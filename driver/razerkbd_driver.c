@@ -344,6 +344,12 @@ static ssize_t razer_attr_read_kbd_layout(struct device *dev, struct device_attr
     struct razer_report request = get_razer_report(0x00, 0x86, 0x02);
     struct razer_report response = {0};
 
+    switch(usb_dev->descriptor.idProduct) {
+    case USB_DEVICE_ID_RAZER_ORNATA_V3:
+        request.transaction_id.id = 0x08;
+        break;
+    }
+
     razer_send_payload(usb_dev, &request, &response);
 
     return sprintf(buf, "%02x\n", response.arguments[0]);
@@ -366,7 +372,6 @@ static void razer_set_device_mode(struct usb_device *usb_dev, unsigned char mode
     case USB_DEVICE_ID_RAZER_ORNATA:
     case USB_DEVICE_ID_RAZER_ORNATA_CHROMA:
     case USB_DEVICE_ID_RAZER_ORNATA_V2:
-    case USB_DEVICE_ID_RAZER_ORNATA_V3:
     case USB_DEVICE_ID_RAZER_CYNOSA_CHROMA:
     case USB_DEVICE_ID_RAZER_CYNOSA_CHROMA_PRO:
     case USB_DEVICE_ID_RAZER_CYNOSA_LITE:
@@ -376,6 +381,7 @@ static void razer_set_device_mode(struct usb_device *usb_dev, unsigned char mode
     case USB_DEVICE_ID_RAZER_BLACKWIDOW_V3_MINI:
     case USB_DEVICE_ID_RAZER_DEATHSTALKER_V2:
     case USB_DEVICE_ID_RAZER_DEATHSTALKER_V2_PRO_WIRED:
+    case USB_DEVICE_ID_RAZER_ORNATA_V3:
         request.transaction_id.id = 0x1F;
         break;
     case USB_DEVICE_ID_RAZER_BLACKWIDOW_V3_MINI_WIRELESS:
@@ -552,6 +558,7 @@ static ssize_t razer_attr_write_game_led_state(struct device *dev, struct device
     switch(usb_dev->descriptor.idProduct) {
     case USB_DEVICE_ID_RAZER_HUNTSMAN_V2_TENKEYLESS:
     case USB_DEVICE_ID_RAZER_HUNTSMAN_V2:
+    case USB_DEVICE_ID_RAZER_ORNATA_V3:
         request = razer_chroma_standard_set_led_state(NOSTORE, GAME_LED, enabled);
         request.transaction_id.id = 0x1f;
         break;
@@ -1080,7 +1087,6 @@ static ssize_t razer_attr_write_macro_led_effect(struct device *dev, struct devi
     case USB_DEVICE_ID_RAZER_ORNATA:
     case USB_DEVICE_ID_RAZER_ORNATA_CHROMA:
     case USB_DEVICE_ID_RAZER_ORNATA_V2:
-    case USB_DEVICE_ID_RAZER_ORNATA_V3:
     case USB_DEVICE_ID_RAZER_HUNTSMAN_ELITE:
     case USB_DEVICE_ID_RAZER_HUNTSMAN_TE:
     case USB_DEVICE_ID_RAZER_BLACKWIDOW_2019:
@@ -1098,9 +1104,10 @@ static ssize_t razer_attr_write_macro_led_effect(struct device *dev, struct devi
         request.transaction_id.id = 0x3F;
         break;
 
-    case USB_DEVICE_ID_RAZER_TARTARUS_V2:
     case USB_DEVICE_ID_RAZER_BLACKWIDOW_ELITE:
     case USB_DEVICE_ID_RAZER_BLACKWIDOW_V3_MINI:
+    case USB_DEVICE_ID_RAZER_ORNATA_V3:
+    case USB_DEVICE_ID_RAZER_TARTARUS_V2:
         request = razer_chroma_standard_set_led_effect(NOSTORE, MACRO_LED, enabled);
         request.transaction_id.id = 0x1F;
         break;
@@ -1353,6 +1360,14 @@ static ssize_t razer_attr_read_device_serial(struct device *dev, struct device_a
     char serial_string[51];
     struct razer_report request = razer_chroma_standard_get_serial();
     struct razer_report response = {0};
+
+    switch(usb_dev->descriptor.idProduct) {
+    case USB_DEVICE_ID_RAZER_ORNATA_V3:
+        request.transaction_id.id = 0x08;
+        break;
+    default:
+        break;
+    }
 
     if (is_blade_laptop(usb_dev)) {
         strncpy(&serial_string[0], dmi_get_system_info(DMI_PRODUCT_SERIAL), 50);
@@ -2561,6 +2576,16 @@ static ssize_t razer_attr_write_device_mode(struct device *dev, struct device_at
     }
 
     request = razer_chroma_standard_set_device_mode(buf[0], buf[1]);
+
+    switch(usb_dev->descriptor.idProduct) {
+    case USB_DEVICE_ID_RAZER_ORNATA_V3:
+        request.transaction_id.id = 0x1F;
+        break;
+
+    default:
+        break;
+    }
+
     razer_send_payload(usb_dev, &request, &response);
 
     return count;
