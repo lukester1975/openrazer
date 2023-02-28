@@ -2449,7 +2449,7 @@ static ssize_t razer_attr_write_device_mode(struct device *dev, struct device_at
     struct razer_report response = {0};
 
     if (count != 2) {
-        printk(KERN_WARNING "razerkbd: Device mode only takes 2 bytes.\n");
+        printk(KERN_WARNING "razermouse: Device mode only takes 2 bytes.\n");
         return -EINVAL;
     }
 
